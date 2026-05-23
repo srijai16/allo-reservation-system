@@ -183,16 +183,6 @@ export default function ReservationPage() {
                 <Row label="Warehouse ID" value={reservation.warehouseId} />
                 <Row label="Quantity" value={reservation.quantity} />
                 <Row label="Status" value={reservation.status} />
-                <Row label="Created At" value={new Date(reservation.createdAt).toLocaleString()} />
-                <Row label="Expires At" value={new Date(reservation.expiresAt).toLocaleString()} />
-                <Row
-                label="Confirmed At"
-                value={
-                    reservation.confirmedAt
-                    ? new Date(reservation.confirmedAt).toLocaleString()
-                    : "-"
-                }
-                />
                 <Row
                 label="Released At"
                 value={
@@ -285,7 +275,7 @@ function Row({
 
 function StatusBadge({ status }: { status: Reservation["status"] }) {
   const map: Record<
-    Reservation["status"],
+    string,
     {
       label: string;
       variant: "default" | "secondary" | "destructive" | "outline";
@@ -294,9 +284,18 @@ function StatusBadge({ status }: { status: Reservation["status"] }) {
     PENDING: { label: "Pending", variant: "default" },
     CONFIRMED: { label: "Confirmed", variant: "secondary" },
     RELEASED: { label: "Released", variant: "destructive" },
+
+    // optional old values fallback
+    active: { label: "Active", variant: "default" },
+    confirmed: { label: "Confirmed", variant: "secondary" },
+    cancelled: { label: "Cancelled", variant: "outline" },
+    expired: { label: "Expired", variant: "destructive" },
   };
 
-  const v = map[status];
+  const v = map[status] ?? {
+    label: String(status),
+    variant: "outline" as const,
+  };
 
   return <Badge variant={v.variant}>{v.label}</Badge>;
 }
