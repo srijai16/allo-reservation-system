@@ -285,7 +285,7 @@ function StatusBadge({ status }: { status: Reservation["status"] }) {
     CONFIRMED: { label: "Confirmed", variant: "secondary" },
     RELEASED: { label: "Released", variant: "destructive" },
 
-    // optional old values fallback
+    
     active: { label: "Active", variant: "default" },
     confirmed: { label: "Confirmed", variant: "secondary" },
     cancelled: { label: "Cancelled", variant: "outline" },
