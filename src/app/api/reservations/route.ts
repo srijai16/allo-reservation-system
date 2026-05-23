@@ -1,55 +1,73 @@
 // src/app/api/reservations/route.ts (post)
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { Prisma } from "@prisma/client";
 import { z } from "zod";
 
 const reserveSchema = z.object({
   productId: z.string(),
   warehouseId: z.string(),
-  quantity: z.number().min(1),
-  expiresInMinutes: z.number().min(1).max(60).optional(),
+  quantity: z.number().int().min(1),
 });
 
 export async function POST(req: Request) {
   const body = await req.json();
-  const parse = reserveSchema.safeParse(body);
-  if (!parse.success) return NextResponse.json({ error: parse.error }, { status: 400 });
+  const parsed = reserveSchema.safeParse(body);
 
-  const { productId, warehouseId, quantity, expiresInMinutes = 10 } = parse.data;
-  const expiresAt = new Date(Date.now() + expiresInMinutes * 60 * 1000);
+  if (!parsed.success) {
+    return NextResponse.json(
+      { error: "Invalid request body" },
+      { status: 400 }
+    );
+  }
+
+  const { productId, warehouseId, quantity } = parsed.data;
+  const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
 
   try {
-    return await prisma.$transaction(async (tx) => {
-      // Lock the stock row
-      const stock = await tx.stockLevel.findUnique({
-        where: { productId_warehouseId: { productId, warehouseId } },
-      });
+    const reservation = await prisma.$transaction(
+      async (tx) => {
+        const updatedRows = await tx.$queryRaw<{ id: string }[]>`
+          UPDATE "StockLevel"
+          SET "reservedUnits" = "reservedUnits" + ${quantity}
+          WHERE "productId" = ${productId}
+            AND "warehouseId" = ${warehouseId}
+            AND ("totalUnits" - "reservedUnits") >= ${quantity}
+          RETURNING id
+        `;
 
-      if (!stock || stock.totalUnits - stock.reservedUnits < quantity) {
-        return NextResponse.json({ error: "Not enough stock" }, { status: 409 });
+        if (updatedRows.length !== 1) {
+          throw new Error("NOT_ENOUGH_STOCK");
+        }
+
+        return tx.reservation.create({
+          data: {
+            productId,
+            warehouseId,
+            quantity,
+            status: "PENDING",
+            expiresAt,
+          },
+        });
+      },
+      {
+        isolationLevel: Prisma.TransactionIsolationLevel.ReadCommitted,
       }
+    );
 
-      // Increment reservedUnits
-      await tx.stockLevel.update({
-        where: { productId_warehouseId: { productId, warehouseId } },
-        data: { reservedUnits: { increment: quantity } },
-      });
+    return NextResponse.json(reservation, { status: 201 });
+  } catch (error) {
+    if (error instanceof Error && error.message === "NOT_ENOUGH_STOCK") {
+      return NextResponse.json(
+        { error: "Not enough stock available" },
+        { status: 409 }
+      );
+    }
 
-      // Create reservation
-      const reservation = await tx.reservation.create({
-        data: {
-          productId,
-          warehouseId,
-          quantity,
-          status: "PENDING",
-          expiresAt,
-        },
-      });
-
-      return NextResponse.json(reservation);
-    });
-  } catch (err) {
-    console.error(err);
-    return NextResponse.json({ error: "Internal error" }, { status: 500 });
+    console.error(error);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
   }
 }
