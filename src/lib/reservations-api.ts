@@ -19,6 +19,7 @@ export type Product = {
 export type Reservation = {
   id: string;
   productId: string;
+  name:string;
   warehouseId: string;
   quantity: number;
   status: "PENDING" | "CONFIRMED" | "RELEASED";
