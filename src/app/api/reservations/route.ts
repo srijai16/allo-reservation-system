@@ -4,6 +4,13 @@ import { prisma } from "@/lib/prisma"
 import { Prisma } from "@prisma/client"
 import { z } from "zod"
 
+import {
+  getCachedIdempotentResponse,
+  getIdempotencyKey,
+  hashBody,
+  saveIdempotentResponse,
+} from "@/lib/idempotency"
+
 const reserveSchema = z.object({
   productId: z.string(),
   warehouseId: z.string(),
@@ -21,6 +28,20 @@ export async function POST(req: Request) {
       { error: "Invalid request body" },
       { status: 400 }
     )
+  }
+
+  const endpoint = "POST /api/reservations"
+  const idempotencyKey = getIdempotencyKey(req)
+  const requestHash = hashBody(parsed.data)
+
+  if (idempotencyKey) {
+    const cached = await getCachedIdempotentResponse(
+      idempotencyKey,
+      endpoint,
+      requestHash
+    )
+
+    if (cached) return cached
   }
 
   const { productId, warehouseId, warehouseName, name, quantity } = parsed.data
@@ -58,6 +79,16 @@ export async function POST(req: Request) {
         isolationLevel: Prisma.TransactionIsolationLevel.ReadCommitted,
       }
     )
+
+    if (idempotencyKey) {
+      await saveIdempotentResponse({
+        key: idempotencyKey,
+        endpoint,
+        requestHash,
+        statusCode: 201,
+        responseBody: reservation,
+      })
+    }
 
     return NextResponse.json(reservation, { status: 201 })
   } catch (error) {
