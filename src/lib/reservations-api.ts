@@ -1,3 +1,7 @@
+import { releaseExpiredReservations } from "@/lib/release-expired-reservations"
+function createIdempotencyKey() {
+  return crypto.randomUUID()
+}
 export type WarehouseStock = {
   warehouseId: string;
   warehouseName: string;
@@ -63,11 +67,12 @@ async function request<T>(
 }
 
 export async function listProducts(): Promise<Product[]> {
+  await releaseExpiredReservations();
   return request<Product[]>("/api/products");
 }
 
 export async function createReservation(input: {
-   productId: string
+  productId: string
   warehouseId: string
   warehouseName: string
   name: string
@@ -75,8 +80,11 @@ export async function createReservation(input: {
 }): Promise<Reservation> {
   return request<Reservation>("/api/reservations", {
     method: "POST",
+    headers: {
+      "Idempotency-Key": createIdempotencyKey(),
+    },
     body: JSON.stringify(input),
-  });
+  })
 }
 
 export async function getReservation(id: string): Promise<Reservation> {
@@ -86,7 +94,10 @@ export async function getReservation(id: string): Promise<Reservation> {
 export async function confirmReservation(id: string): Promise<Reservation> {
   return request<Reservation>(`/api/reservations/${id}/confirm`, {
     method: "POST",
-  });
+    headers: {
+      "Idempotency-Key": createIdempotencyKey(),
+    },
+  })
 }
 
 export async function releaseReservation(id: string): Promise<Reservation> {

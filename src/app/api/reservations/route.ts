@@ -1,6 +1,7 @@
 // src/app/api/reservations/route.ts
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
+import { redis } from "@/lib/redis"
 import { Prisma } from "@prisma/client"
 import { z } from "zod"
 
@@ -79,6 +80,8 @@ export async function POST(req: Request) {
         isolationLevel: Prisma.TransactionIsolationLevel.ReadCommitted,
       }
     )
+
+    await redis.del("products:list")
 
     if (idempotencyKey) {
       await saveIdempotentResponse({

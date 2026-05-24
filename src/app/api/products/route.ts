@@ -2,8 +2,11 @@
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { redis } from "@/lib/redis"
+import { releaseExpiredReservations } from "@/lib/release-expired-reservations"
 
 export async function GET() {
+  await releaseExpiredReservations()
+
   const cacheKey = "products:list"
 
   const cached = await redis.get(cacheKey)
