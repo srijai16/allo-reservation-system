@@ -18,6 +18,7 @@ export async function GET() {
   const data = products.map((product) => ({
     id: product.id,
     name: product.name,
+    price:product.price,
     description: product.description,
     imageUrl: product.imageUrl,
     warehouses: product.stocks.map((stock) => ({

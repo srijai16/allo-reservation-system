@@ -216,7 +216,7 @@ function ProductCard({ product }: { product: Product }) {
             {product.name}
           </span>
           <span className="shrink-0 font-mono text-base font-semibold text-zinc-900">
-            ${product.price ?? 0}
+            ₹{product.price ?? 0}
           </span>
         </CardTitle>
         <p className="text-xs text-zinc-400 leading-relaxed line-clamp-2 mt-1">
