@@ -6,7 +6,7 @@ The app solves the checkout inventory race condition by temporarily reserving st
 
 ## Links
 
-- Live Demo: `https://allo-reservation-system-eight.vercel.app/`
+- [Live Demo](https://allo-reservation-system-eight.vercel.app/)
 
 ## Tech Stack
 
