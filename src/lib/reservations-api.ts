@@ -1,4 +1,4 @@
-import { releaseExpiredReservations } from "@/lib/release-expired-reservations"
+
 function createIdempotencyKey() {
   return crypto.randomUUID()
 }
@@ -67,7 +67,6 @@ async function request<T>(
 }
 
 export async function listProducts(): Promise<Product[]> {
-  await releaseExpiredReservations();
   return request<Product[]>("/api/products");
 }
 
