@@ -4,9 +4,9 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "lint": "eslint"
+    "build": "prisma generate && next build",
+    "postinstall": "prisma generate",
+    "seed": "tsx prisma/seed.ts"
   },
   "dependencies": {
     "@prisma/adapter-better-sqlite3": "^7.8.0",
@@ -14,6 +14,7 @@
     "@prisma/client": "^7.8.0",
     "@tanstack/react-router": "^1.170.7",
     "@tanstack/react-router-devtools": "^1.167.0",
+    "@upstash/redis": "^1.38.0",
     "better-sqlite3": "^12.10.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
@@ -40,8 +41,5 @@
     "tailwindcss": "^4",
     "tsx": "^4.22.3",
     "typescript": "^5"
-  },
-  "prisma": {
-    "seed": "tsx prisma/seed.ts"
   }
 }
