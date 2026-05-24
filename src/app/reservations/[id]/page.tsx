@@ -1,5 +1,5 @@
 "use client";
-
+//reservations page
 import { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { toast } from "sonner";
@@ -285,7 +285,7 @@ function StatusBadge({ status }: { status: Reservation["status"] }) {
     CONFIRMED: { label: "Confirmed", variant: "secondary" },
     RELEASED: { label: "Released", variant: "destructive" },
 
-    
+
     active: { label: "Active", variant: "default" },
     confirmed: { label: "Confirmed", variant: "secondary" },
     cancelled: { label: "Cancelled", variant: "outline" },
