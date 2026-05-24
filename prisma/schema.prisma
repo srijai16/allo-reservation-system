@@ -57,6 +57,7 @@ model Reservation {
   productId    String
   warehouseId  String
   name        String?
+  warehouseName String?
   quantity     Int
   status       ReservationStatus @default(PENDING)
   expiresAt    DateTime

@@ -20,6 +20,7 @@ export type Reservation = {
   id: string;
   productId: string;
   name:string;
+  warehouseName:string;
   warehouseId: string;
   quantity: number;
   status: "PENDING" | "CONFIRMED" | "RELEASED";
@@ -66,9 +67,11 @@ export async function listProducts(): Promise<Product[]> {
 }
 
 export async function createReservation(input: {
-  productId: string;
-  warehouseId: string;
-  quantity: number;
+   productId: string
+  warehouseId: string
+  warehouseName: string
+  name: string
+  quantity: number
 }): Promise<Reservation> {
   return request<Reservation>("/api/reservations", {
     method: "POST",

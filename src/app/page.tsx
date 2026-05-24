@@ -128,7 +128,7 @@ function ProductCard({ product }: { product: Product }) {
         quantity,
       })
 
-      // ✅ Success toast
+      // Success toast
       toast.custom(() => (
         <div className="flex items-start gap-3.5 w-[360px] rounded-2xl border border-emerald-200 bg-white px-5 py-4 shadow-lg shadow-emerald-100/60">
           <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-emerald-50 mt-0.5">
